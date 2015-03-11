@@ -114,7 +114,7 @@ class Logger(object):
 
         # rotating log file handler
         if self.fileLogging:
-            rfh = logging.handlers.RotatingFileHandler(self.logFile, maxBytes=sickbeard.LOG_SIZE, backupCount=sickbeard.LOG_NR, encoding='utf-8')
+            rfh = logging.handlers.WatchedFileHandler(self.logFile, encoding='utf-8')
             rfh.setFormatter(CensoredFormatter(u'%(asctime)s %(levelname)-8s %(message)s', '%Y-%m-%d %H:%M:%S'))
             rfh.setLevel(DEBUG)
 
