@@ -26,9 +26,12 @@ from sickbeard.clients.generic import GenericClient
 
 
 class TransmissionAPI(GenericClient):
-    def __init__(self, host=None, username=None, password=None):
+    def __init__(self, host=None, username=None, password=None, rpcurl=None, organized=None):
 
         super(TransmissionAPI, self).__init__('Transmission', host, username, password)
+
+	self.rpculr = sickbeard.TORRENT_RPCURL if rpcurl is None else rpcurl
+	self.organized = sickbeard.TORRENT_ORGANIZED if organized is None else organized
 
         if not self.host.endswith('/'):
             self.host = self.host + '/'
@@ -40,6 +43,12 @@ class TransmissionAPI(GenericClient):
             self.rpcurl = self.rpcurl[:-1]
 
         self.url = self.host + self.rpcurl + '/rpc'
+
+    def __str__(self):
+        res = u'[%s, url=%s, username=%s, password=%s, rpcurl=%s, organized=%s]' % \
+             (super(TransmissionAPI, self).__str__(), self.url, self.username, self.password, self.rpcurl, self.organized)
+
+        return res
 
     def _get_auth(self):
 
@@ -155,5 +164,27 @@ class TransmissionAPI(GenericClient):
 
         return self.response.json()['result'] == "success"
 
+    def _set_torrent_path(self, result):
+
+        def format_location(episode):
+            path = u'%s/Season%02d/' % (episode.show.location, episode.season)
+
+            return path
+
+        if self.organized:
+            torrent_id = self._get_torrent_hash(result)
+
+            newlocation = format_location(result.episodes[0])
+            arguments = { 'ids': [torrent_id],
+                          'location': newlocation,
+                          'move': 'true' }
+
+            post_data = json.dumps( {'arguments': arguments,
+                                     'method': 'torrent-set-location',
+                                    } )
+            self._request(method='post', data=post_data)
+            return self.response.json()['result'] == "success"
+        else:
+            return True
 
 api = TransmissionAPI()

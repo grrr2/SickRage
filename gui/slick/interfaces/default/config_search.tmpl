@@ -604,6 +604,16 @@
 								</label>
 							</div>
 
+                                                        <div class="field-pair" id="torrent_organized_option">
+                                                                <label>
+                                                                        <span class="component-title">Organized</span>
+                                                                        <span class="component-desc">
+                                                                                <input type="checkbox" name="torrent_organized" class="enabler" id="torrent_organized" <%= html_checked if sickbeard.TORRENT_ORGANIZED == True else '' %>/>
+                                                                                <p>Set downloads to 'Downloaded files location/ShowName/Season01' like structure</p>
+                                                                        </span>
+                                                                </label>
+                                                        </div>
+
 							<div class="testNotification" id="test_torrent_result">Click below to test</div>
 							<input class="btn" type="button" value="Test Connection" id="test_torrent" class="btn test-button"/>
 							<input type="submit" class="btn config_submitter" value="Save Changes" /><br/>
