@@ -183,7 +183,7 @@ class PostProcessor(object):
         base_name = re.sub(r'[\[\]\*\?]', r'[\g<0>]', base_name)
         
         if subfolders:
-            filelist = ek.ek(recursive_glob, self.folder_path,  base_name + '*')
+            filelist = ek.ek(recursive_glob, ek.ek(os.path.dirname, file_path),  base_name + '*')
         else:
             filelist = ek.ek(glob.glob, base_name + '*')
         for associated_file_path in filelist:
@@ -327,7 +327,7 @@ class PostProcessor(object):
                 helpers.chmodAsParent(new_file_path)
             except (IOError, OSError), e:
                 self._log("Unable to move file " + cur_file_path + " to " + new_file_path + ": " + str(e), logger.ERROR)
-                raise e
+                raise
 
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files, action=_int_move,
                                       subtitles=subtitles)
@@ -348,7 +348,7 @@ class PostProcessor(object):
                 helpers.chmodAsParent(new_file_path)
             except (IOError, OSError), e:
                 logger.log("Unable to copy file " + cur_file_path + " to " + new_file_path + ": " + ex(e), logger.ERROR)
-                raise e
+                raise
 
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files, action=_int_copy,
                                       subtitles=subtitles)
@@ -370,7 +370,7 @@ class PostProcessor(object):
                 helpers.chmodAsParent(new_file_path)
             except (IOError, OSError), e:
                 self._log("Unable to link file " + cur_file_path + " to " + new_file_path + ": " + ex(e), logger.ERROR)
-                raise e
+                raise
 
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files, action=_int_hard_link)
 
@@ -390,7 +390,7 @@ class PostProcessor(object):
                 helpers.chmodAsParent(new_file_path)
             except (IOError, OSError), e:
                 self._log("Unable to link file " + cur_file_path + " to " + new_file_path + ": " + ex(e), logger.ERROR)
-                raise e
+                raise
 
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files,
                                       action=_int_move_and_sym_link)
