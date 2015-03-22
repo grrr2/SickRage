@@ -123,7 +123,7 @@ class SearchResult:
         for extra in self.extraInfo:
             myString += "  " + extra + "\n"
 
-        myString += "Episode: " + str(self.episodes) + "\n"
+        myString += "Episode(s): " + '[%s]' % ', '.join(map(str,self.episodes)) + "\n"
         myString += "Quality: " + Quality.qualityStrings[self.quality] + "\n"
         myString += "Name: " + self.name + "\n"
         myString += "Size: " + str(self.size) + "\n"

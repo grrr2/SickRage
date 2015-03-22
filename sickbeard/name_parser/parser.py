@@ -51,6 +51,8 @@ class NameParser(object):
             self._compile_regexes(self.ANIME_REGEX)
         else:
             self._compile_regexes(self.ALL_REGEX)
+	# !!! temp: force NOMRAL_REGEX only 
+        self._compile_regexes(self.NORMAL_REGEX)
 
     def clean_series_name(self, series_name):
         """Cleans up series name by removing any . and _
@@ -105,6 +107,7 @@ class NameParser(object):
         bestResult = None
 
         for (cur_regex_num, cur_regex_name, cur_regex) in self.compiled_regexes:
+	    logger.log(u"_parse_string(): cur_regex_name=%s name=%s" % (cur_regex_name, name))
             match = cur_regex.match(name)
 
             if not match:
@@ -113,6 +116,7 @@ class NameParser(object):
             result = ParseResult(name)
             result.which_regex = [cur_regex_name]
             result.score = 0 - cur_regex_num
+	    logger.log(u"_parse_string(): result=%s" % str(result))
 
             named_groups = match.groupdict().keys()
 
@@ -121,9 +125,11 @@ class NameParser(object):
                 if result.series_name:
                     result.series_name = self.clean_series_name(result.series_name)
                     result.score += 1
+		    logger.log(u"_parse_string(): +series_name result: %s" % str(result))
 
             if 'series_num' in named_groups and match.group('series_num'):
                 result.score += 1
+		logger.log(u"_parse_string(): +series_num result: %s" % str(result))
 
             if 'season_num' in named_groups:
                 tmp_season = int(match.group('season_num'))
@@ -131,6 +137,7 @@ class NameParser(object):
                     continue
                 result.season_number = tmp_season
                 result.score += 1
+		logger.log(u"_parse_string(): +season_num result: %s" % str(result))
 
             if 'ep_num' in named_groups:
                 ep_num = self._convert_number(match.group('ep_num'))
@@ -140,6 +147,7 @@ class NameParser(object):
                 else:
                     result.episode_numbers = [ep_num]
                 result.score += 1
+		logger.log(u"_parse_string(): +ep_num result: %s" % str(result))
 
             if 'ep_ab_num' in named_groups:
                 ep_ab_num = self._convert_number(match.group('ep_ab_num'))
@@ -150,12 +158,14 @@ class NameParser(object):
                 else:
                     result.ab_episode_numbers = [ep_ab_num]
                 result.score += 1
+		logger.log(u"_parse_string(): +ep_ab_num result: %s" % str(result))
 
             if 'air_date' in named_groups:
                 air_date = match.group('air_date')
                 try:
                     result.air_date = parser.parse(air_date, fuzzy=True).date()
                     result.score += 1
+		    logger.log(u"_parse_string(): +air_date result: %s" % str(result))
                 except:
                     continue
 
@@ -168,10 +178,13 @@ class NameParser(object):
                     continue
                 result.extra_info = tmp_extra_info
                 result.score += 1
+	        logger.log(u"_parse_string(): +extra_info result: %s" % str(result))
 
             if 'release_group' in named_groups:
                 result.release_group = match.group('release_group')
                 result.score += 1
+	        logger.log(u"_parse_string(): +release_group result: %s" % str(result))
+
 
             if 'version' in named_groups:
                 # assigns version to anime file if detected using anime regex. Non-anime regex receives -1
@@ -186,8 +199,11 @@ class NameParser(object):
             matches.append(result)
 
         if len(matches):
+	    for r in matches:
+		logger.log(u"_parse_string(): matches=%s" % str(r))
             # pick best match with highest score based on placement
             bestResult = max(sorted(matches, reverse=True, key=lambda x: x.which_regex), key=lambda x: x.score)
+	    logger.log(u"_parse_string(): best=%s" % str(bestResult))
 
             show = None
             if not self.naming_pattern:
@@ -566,6 +582,8 @@ class ParseResult(object):
         to_return += ' [ABD: ' + str(self.is_air_by_date) + ']'
         to_return += ' [ANIME: ' + str(self.is_anime) + ']'
         to_return += ' [whichReg: ' + str(self.which_regex) + ']'
+	to_return += ' [score: ' + str(self.score) + ']'
+	to_return += ' [extra: ' + str(self.extra_info) + ']'
 
         return to_return.encode('utf-8')
 

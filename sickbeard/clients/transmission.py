@@ -74,11 +74,11 @@ class TransmissionAPI(GenericClient):
     def _add_torrent_uri(self, result):
 
         arguments = {'filename': result.url,
-                     'paused': 1 if sickbeard.TORRENT_PAUSED else 0,
+                     'paused': 'true' if sickbeard.TORRENT_PAUSED else 'false',
                      'download-dir': sickbeard.TORRENT_PATH
         }
-        post_data = json.dumps({'arguments': arguments,
-                                'method': 'torrent-add',
+        post_data = json.dumps({'method': 'torrent-add',
+				'arguments': arguments,
         })
         self._request(method='post', data=post_data)
 
@@ -87,11 +87,11 @@ class TransmissionAPI(GenericClient):
     def _add_torrent_file(self, result):
 
         arguments = {'metainfo': b64encode(result.content),
-                     'paused': 1 if sickbeard.TORRENT_PAUSED else 0,
+                     'paused': 'true' if sickbeard.TORRENT_PAUSED else 'false',
                      'download-dir': sickbeard.TORRENT_PATH
         }
-        post_data = json.dumps({'arguments': arguments,
-                                'method': 'torrent-add',
+        post_data = json.dumps({'method': 'torrent-add',
+				'arguments': arguments,
         })
         self._request(method='post', data=post_data)
 
@@ -172,15 +172,14 @@ class TransmissionAPI(GenericClient):
             return path
 
         if self.organized:
-            torrent_id = self._get_torrent_hash(result)
-
+            #torrent_id = self._get_torrent_hash(result)
             newlocation = format_location(result.episodes[0])
-            arguments = { 'ids': [torrent_id],
+            arguments = { 'ids': [result.hash],
                           'location': newlocation,
                           'move': 'true' }
 
-            post_data = json.dumps( {'arguments': arguments,
-                                     'method': 'torrent-set-location',
+            post_data = json.dumps( {'method': 'torrent-set-location',
+				     'arguments': arguments,	
                                     } )
             self._request(method='post', data=post_data)
             return self.response.json()['result'] == "success"

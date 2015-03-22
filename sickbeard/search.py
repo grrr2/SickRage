@@ -261,6 +261,29 @@ def pickBestResult(results, show, quality_list=None):
                 logger.log(cur_result.name + u" has previously failed, rejecting it")
                 continue
 
+	try:
+	    logger.log(u"pickBestResult(): cur_result is %s" % cur_result.__class__.__name__, logger.DEBUG)
+	    logger.log(u"pickBestResult(): cur_result=%s" % str(cur_result), logger.DEBUG)
+
+	    myDB = db.DBConnection()
+	    sqlResult = myDB.select("SELECT ep.status, ep.season, ep.episode FROM tv_episodes ep, tv_shows sh WHERE ep.showid = sh.indexer_id AND ep.season = ? and ep.episode = ? and ep.showid = ?", 
+		[cur_result.episodes[0].season, cur_result.episodes[0].episode, cur_result.show.indexerid])
+	    logger.log(u"pickBestResult(): sql result=" + '[%s]' % ', '.join(map(str, sqlResult)), logger.DEBUG)
+	    dbEpStatus, dbEpQuality = Quality.splitCompositeStatus(sqlResult[0]["status"])
+	    logger.log(u"pickBestResult(): db quality=%s vs cur_result.quality=%s" % 
+		(Quality.qualityStrings[dbEpQuality], Quality.qualityStrings[cur_result.qualityi]), 
+		logger.DEBUG)
+
+	    if dbEpQuality >= cur_result.quality:
+		logger.log(u"pickBestResult(): existing quality (%s) is better than cur_result.quality (%s) - discard" %
+				(Quality.qualityStrings[dbEpQuality], Quality.qualityStrings[cur_result.quality]), 
+				logger.DEBUG)
+		continue
+	except Exception, e:
+	    logger.log(u"pickBestResult(): failed to find episode S%dE%d in database=%s" % 
+			(cur_result.episodes[0].season, cur_result.episodes[0].episode, str(e)), 
+			logger.DEBUG)
+
         if not bestResult or bestResult.quality < cur_result.quality and cur_result.quality != Quality.UNKNOWN:
             bestResult = cur_result
 
