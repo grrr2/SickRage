@@ -3797,13 +3797,8 @@ class ConfigSearch(Config):
                    randomize_providers=None, backlog_startup=None, use_failed_downloads=None, delete_failed=None,
                    dailysearch_startup=None, torrent_dir=None, torrent_username=None, torrent_password=None, torrent_host=None,
                    torrent_label=None, torrent_label_anime=None, torrent_path=None, torrent_verify_cert=None,
-<<<<<<< HEAD
-                   torrent_seed_time=None, torrent_paused=None, torrent_high_bandwidth=None,
-                   torrent_rpcurl=None, torrent_auth_type = None, torrent_organized = None, ignore_words=None, require_words=None):
-=======
                    torrent_seed_time=None, torrent_paused=None, torrent_high_bandwidth=None, coming_eps_missed_range=None,
-                   torrent_rpcurl=None, torrent_auth_type = None, ignore_words=None, require_words=None):
->>>>>>> upstream/master
+                   torrent_rpcurl=None, torrent_auth_type = None, torrent_organized = None, ignore_words=None, require_words=None):
 
         results = []
 
