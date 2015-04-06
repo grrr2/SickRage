@@ -179,7 +179,10 @@ def snatchEpisode(result, endStatus=SNATCHED):
         myDB.mass_action(sql_l)
 
     if sickbeard.UPDATE_SHOWS_ON_SNATCH and not sickbeard.showQueueScheduler.action.isBeingUpdated(result.show) and result.show.status == "Continuing":
-        sickbeard.showQueueScheduler.action.updateShow(result.show, True)
+        try:
+            sickbeard.showQueueScheduler.action.updateShow(result.show, True)
+        except exceptions.CantUpdateException as e:
+            logger.log("Unable to update show: {0}".format(str(e)),logger.DEBUG)
 
     return True
 
@@ -447,7 +450,7 @@ def searchForNeededEpisodes():
     return foundResults.values()
 
 
-def searchProviders(show, episodes, manualSearch=False):
+def searchProviders(show, episodes, manualSearch=False, downCurQuality=False):
     foundResults = {}
     finalResults = []
 
@@ -497,7 +500,7 @@ def searchProviders(show, episodes, manualSearch=False):
                 logger.log(u"Performing season pack search for " + show.name)
 
             try:
-                searchResults = curProvider.findSearchResults(show, episodes, search_mode, manualSearch)
+                searchResults = curProvider.findSearchResults(show, episodes, search_mode, manualSearch, downCurQuality)
             except exceptions.AuthException, e:
                 logger.log(u"Authentication error: " + ex(e), logger.ERROR)
                 break
@@ -571,7 +574,7 @@ def searchProviders(show, episodes, manualSearch=False):
             anyWanted = False
             for curEpNum in allEps:
                 for season in set([x.season for x in episodes]):
-                    if not show.wantEpisode(season, curEpNum, seasonQual):
+                    if not show.wantEpisode(season, curEpNum, seasonQual, downCurQuality):
                         allWanted = False
                     else:
                         anyWanted = True
@@ -682,6 +685,8 @@ def searchProviders(show, episodes, manualSearch=False):
 
                 # if we're keeping this multi-result then remember it
                 for epObj in multiResult.episodes:
+                    if not multiResult.url.startswith('magnet'):
+                        multiResult.content = multiResult.provider.getURL(cur_result.url)
                     multiResults[epObj.episode] = multiResult
 
                 # don't bother with the single result if we're going to get it with a multi result
